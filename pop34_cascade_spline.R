@@ -632,7 +632,7 @@ forecasts_sex_population34<-do.call("rbind",parLapply(cl, c(1,2), function(sid){
   library(zoo)
   invisible(sapply(list.files("FILEPATH", full.names = T), source))
   loc.met <- get_location_metadata(location_set_id = 92, release_id = 9)
-  #all countries, minus UK, plus the 4 nations of  the UK- not possible given FHS doesn't forecast sublocs
+  #all countries and territories
   loc.met <- loc.met[level==3]
   locs <- unique(loc.met$location_id)
   hierarchy <- get_location_metadata(92, gbd_round_id = 7, decomp_step = 'iterative')
@@ -645,10 +645,10 @@ forecasts_sex_population34<-do.call("rbind",parLapply(cl, c(1,2), function(sid){
   sdi_forecast<- sdi_forecast[location_id%in%locs & year_id%in%c(2021:2050) & scenario== 0,]
   setnames(sdi_forecast, "mean", "sdi") 
   pop_forecast<- fread("population_forecast.csv")
-  pop_forecast <- pop_forecast[location_id %in% locs & scenario==0,]
-  setnames(pop_forecast, old="mean", new= "population")
-  pop_2021 <- get_population(age_group_id = c(1,2,3,4,5,8:14), location_set_id = 91, year_id = c(2021), release_id = 9, location_id = locs, sex_id = c(1,2,3)) 
-  pop_forecast<- rbind(pop_forecast[,-c("scenario")], pop_2021[,-"run_id"])
+  setnames(pop_forecast, old="value", new= "population")
+  pop_2021 <- fread("population_retrospective.csv")
+  pop_2021 <- pop_2021[year_id==2021 & age_group_id%in%c(1,2,3,4,5,8:14) & location_id!=1,]
+  pop_forecast<- rbind(pop_forecast, pop_2021[,-"run_id"], fill= TRUE)
   pop_forecast<- pop_forecast[order(location_id, age_group_id, sex_id, year_id)]
   
   pop_forecast4_5 <- pop_forecast[location_id %in% locs & (age_group_id==4 | age_group_id==5),]
